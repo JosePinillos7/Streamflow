@@ -1,7 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+import csv
 
 def load_streamflow(filename):
     """Read the streamflow CSV. Return dates and a 2D array of flows."""
@@ -38,9 +38,53 @@ def plot_streamflow(dates, flows, sites):
     plt.show()
 
 
+def summarize(dates, flows, sites):
+    """Calculate and save flow statistics for each gauge."""
+
+    # Calculate maximum, minimum, and average flows
+    max_flows = np.max(flows, axis=0)
+    min_flows = np.min(flows, axis=0)
+    avg_flows = np.mean(flows, axis=0)
+
+    # Find the date and time of each maximum flow
+    max_indices = np.argmax(flows, axis=0)
+
+    print("\nStreamflow Summary")
+    print("-" * 85)
+    print(f"{'Gauge':<12} {'Max (cfs)':>10} {'Date of max':<20} {'Min (cfs)':>10} {'Avg (cfs)':>10}")
+
+    # Store the results
+    rows = []
+
+    for i in range(len(sites)):
+        max_date = str(dates[max_indices[i]]).replace("T", " ")
+
+        print(
+            f"{sites[i]:<12} "
+            f"{max_flows[i]:>10.1f} "
+            f"{max_date:<20} "
+            f"{min_flows[i]:>10.1f} "
+            f"{avg_flows[i]:>10.1f}"
+        )
+
+        rows.append([
+            sites[i],
+            max_flows[i],
+            max_date,
+            min_flows[i],
+            avg_flows[i]
+        ])
+
+    # Save the summary to a CSV file
+    with open("streamflow_summary.csv", "w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Gauge", "Max (cfs)", "Date of max", "Min (cfs)", "Avg (cfs)"])
+        writer.writerows(rows)
+
 # Main program
 sites = ["10163000", "10155200", "10155500", "10154200", "10155000"]
 
 dates, flows = load_streamflow("June-2021-Provo-River-Streamflow-Rates.csv")
 
 plot_streamflow(dates, flows, sites)
+summarize(dates, flows, sites)
