@@ -81,6 +81,18 @@ def summarize(dates, flows, sites):
         writer.writerow(["Gauge", "Max (cfs)", "Date of max", "Min (cfs)", "Avg (cfs)"])
         writer.writerows(rows)
 
+def threshold_report(flows, sites, threshold):
+    """Count the hours each gauge exceeds the selected flow threshold."""
+    hours_above = np.sum(flows > threshold, axis=0)
+
+    print("\nStreamflow Threshold Report")
+    print("-" * 50)
+    print(f"Selected threshold: {threshold} cfs")
+    print(f"{'Gauge':<15} {'Hours above threshold':>22}")
+
+    for i in range(len(sites)):
+        print(f"{sites[i]:<15} {hours_above[i]:>22}")
+
 # Main program
 sites = ["10163000", "10155200", "10155500", "10154200", "10155000"]
 
@@ -88,3 +100,5 @@ dates, flows = load_streamflow("June-2021-Provo-River-Streamflow-Rates.csv")
 
 plot_streamflow(dates, flows, sites)
 summarize(dates, flows, sites)
+threshold = float(input("\nEnter streamflow threshold (cfs): "))
+threshold_report(flows, sites, threshold)
